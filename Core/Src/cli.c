@@ -18,7 +18,62 @@ static uint32_t buffer_index = 0;
 static volatile uint8_t command_ready_flag = 0;
 static volatile uint8_t quit_monitor_flag = 0;
 
-// ... (CLI_Print_Help e CLI_Frequency_Monitor_Loop continuam iguais à versão que você tem) ...
+/**
+ * @brief Função para o modo de monitoramento contínuo de frequência, com cálculo de min/max.
+ */
+static void CLI_Frequency_Monitor_Loop(void)
+{
+  uint64_t freq_max = 0;
+  uint64_t freq_min = 20000000; // Inicia com um valor alto para garantir que a primeira leitura seja menor
+  uint64_t freq_atual = 0;
+
+  printf("\r\n--- MODO DE MONITORAMENTO DE FREQUENCIA ---\r\n");
+  printf("Pressione a tecla 'q' para sair.\r\n\r\n");
+  
+  quit_monitor_flag = 0; 
+  buffer_index = 0;
+  command_ready_flag = 0;
+
+  while (quit_monitor_flag == 0)
+  {
+    // Zera os contadores para uma nova medição de 1 segundo
+    Frequency_Reset();
+    
+    // Aguarda a janela de tempo de 1 segundo
+    HAL_Delay(1000);
+    
+    // Faz a leitura "atômica" dos contadores
+    HAL_NVIC_DisableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
+    uint32_t overflows = Frequency_Get_Overflow_Count();
+    uint32_t final_count = Frequency_Get_Pulse_Count();
+    HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
+    
+    // Calcula a frequência total
+    freq_atual = ((uint64_t)overflows * 65536) + final_count;
+    
+    // Atualiza os valores mínimo e máximo
+    if (freq_atual > freq_max)
+    {
+      freq_max = freq_atual;
+    }
+    if (freq_atual < freq_min)
+    {
+      freq_min = freq_atual;
+    }
+    
+    // Imprime os valores na mesma linha
+    printf("Atual: %-7llu Hz | Min: %-7llu Hz | Max: %-7llu Hz\n\r", freq_atual, freq_min, freq_max);
+  }
+
+  printf("\r\n\n--- Fim do Monitoramento ---\r\n");
+  printf("Faixa de Frequencia do Trimpot:\r\n");
+  printf("Minimo: %llu Hz\r\n", freq_min);
+  printf("Maximo: %llu Hz\r\n", freq_max);
+}
+
+/**
+ * @brief Imprime a lista de comandos disponíveis.
+ */
 static void CLI_Print_Help(void)
 {
   printf("--- Comandos Disponiveis ---\r\n");
@@ -36,24 +91,6 @@ static void CLI_Print_Help(void)
   printf("----------------------------\r\n");
 }
 
-static void CLI_Frequency_Monitor_Loop(void)
-{
-  printf("\r\n--- MODO DE MONITORAMENTO DE FREQUENCIA ---\r\n");
-  printf("Pressione a tecla 'q' para sair.\r\n\r\n");
-  quit_monitor_flag = 0; 
-  buffer_index = 0;
-  while (quit_monitor_flag == 0)
-  {
-    #define JANELA_DE_TEMPO_MONITOR_MS 10 
-    Frequency_Reset();
-    HAL_Delay(JANELA_DE_TEMPO_MONITOR_MS);
-    uint32_t pulsos_contados = Frequency_Get_Pulse_Count();
-    uint32_t frequencia_hz = pulsos_contados * (1000 / JANELA_DE_TEMPO_MONITOR_MS);
-    printf("Frequencia: %-10u Hz\r", (unsigned int)frequencia_hz);
-  }
-  printf("\r\n\n--- Fim do Monitoramento ---\r\n");
-}
-
 
 void CLI_Init(void)
 {
@@ -63,28 +100,31 @@ void CLI_Init(void)
   HAL_UART_Receive_IT(&huart2, &rx_char, 1);
 }
 
-// ... (A função CLI_Process também continua igual à última versão) ...
 void CLI_Process(void)
 {
   if (command_ready_flag == 0) return;
   printf("%s\r\n", rx_buffer);
+  
+  // Renomeei o comando 'osc freq' para 'osc frec' para evitar conflito com 'q'
   if (strcmp((char*)rx_buffer, "help") == 0) CLI_Print_Help();
   else if (strcmp((char*)rx_buffer, "relay on") == 0) { Relay_On(); printf("Rele LIGADO.\r\n"); }
   else if (strcmp((char*)rx_buffer, "relay off") == 0) { Relay_Off(); printf("Rele DESLIGADO.\r\n"); }
   else if (strcmp((char*)rx_buffer, "temp") == 0) { uint32_t val = Temperature_Read_Raw(); printf("Valor ADC da Temperatura: %u\r\n", val); }
   else if (strcmp((char*)rx_buffer, "tempc") == 0) { uint32_t raw = Temperature_Read_Raw(); float celsius = Temperature_ConvertToCelsius(raw); printf("Temperatura: %.2f C\r\n", celsius); }
   else if (strcmp((char*)rx_buffer, "osc") == 0) { GPIO_PinState state = Oscillator_Get_State(); printf("Estado do Oscilador: %s\r\n", state == GPIO_PIN_SET ? "HIGH (1)" : "LOW (0)"); }
-  else if (strcmp((char*)rx_buffer, "osc frec") == 0) {
-    #define JANELA_DE_TEMPO_MS 10
-    printf("Iniciando medicao por %d ms...\r\n", JANELA_DE_TEMPO_MS);
+  else if (strcmp((char*)rx_buffer, "osc frec") == 0)
+  {
+    printf("Iniciando medicao por 1 segundo...\r\n");
     Frequency_Reset();
-    HAL_Delay(JANELA_DE_TEMPO_MS);
-    uint32_t pulsos_contados = Frequency_Get_Pulse_Count();
-    uint32_t frequencia_hz = pulsos_contados * (1000 / JANELA_DE_TEMPO_MS);
-    printf("Frequencia do Oscilador: %u Hz\r\n", (unsigned int)frequencia_hz);
+    HAL_Delay(1000);
+    HAL_NVIC_DisableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
+    uint32_t overflows = Frequency_Get_Overflow_Count();
+    uint32_t final_count = Frequency_Get_Pulse_Count();
+    HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
+    uint64_t total_pulsos = ((uint64_t)overflows * 65536) + final_count;
+    printf("Frequencia do Oscilador: %llu Hz\r\n", total_pulsos);
   }
   else if (strcmp((char*)rx_buffer, "osc monitor") == 0) CLI_Frequency_Monitor_Loop();
-  else if (strcmp((char*)rx_buffer, "osc reset") == 0) { Frequency_Reset(); printf("Contador de frequencia reiniciado.\r\n"); }
   else if (strcmp((char*)rx_buffer, "test pwm on") == 0) { HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1); printf("Gerador de teste de 10kHz LIGADO no pino PA6.\r\n"); }
   else if (strcmp((char*)rx_buffer, "test pwm off") == 0) { HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1); printf("Gerador de teste DESLIGADO.\r\n"); }
   else printf("Comando desconhecido: '%s'\r\n", rx_buffer);
@@ -92,25 +132,16 @@ void CLI_Process(void)
   printf("> ");
 }
 
-/**
-  * @brief  Callback da interrupção da UART. Versão FINAL.
-  */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if(huart->Instance == USART2)
   {
-    // Reativa a interrupção imediatamente.
     HAL_UART_Receive_IT(&huart2, &rx_char, 1);
-
-    // Se o caractere for 'q', ele apenas ativa o flag de saída e não faz mais nada.
-    // Não será adicionado ao buffer e não irá gerar um "comando desconhecido".
     if (rx_char == 'q' || rx_char == 'Q')
     {
       quit_monitor_flag = 1;
       return; 
     }
-
-    // Processa o caractere para montar a string de comando.
     if (rx_char == '\r' || rx_char == '\n')
     {
       if (buffer_index > 0)

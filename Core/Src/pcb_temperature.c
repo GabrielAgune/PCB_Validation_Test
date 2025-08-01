@@ -3,10 +3,10 @@
 
 // --- CONSTANTES DE CALIBRAÇÃO (BASEADO NOS SEUS DADOS) ---
 // --- CONSTANTES DE CALIBRAÇÃO (ATUALIZADAS COM SEUS NOVOS DADOS) ---
-#define ADC_POINT1      3251.0f
-#define TEMP_POINT1     21.1f
-#define ADC_POINT2      3398.0f
-#define TEMP_POINT2     27.2f
+#define ADC_POINT1      987.0f
+#define TEMP_POINT1     22.3f
+#define ADC_POINT2      823.0f
+#define TEMP_POINT2     31.1f
 
 uint32_t Temperature_Read_Raw(void)
 {
