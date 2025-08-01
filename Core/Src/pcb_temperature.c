@@ -3,14 +3,14 @@
 
 // --- CONSTANTES DE CALIBRAÇÃO (BASEADO NOS SEUS DADOS) ---
 // --- CONSTANTES DE CALIBRAÇÃO (ATUALIZADAS COM SEUS NOVOS DADOS) ---
-#define ADC_POINT1      987.0f
-#define TEMP_POINT1     22.3f
-#define ADC_POINT2      823.0f
+#define ADC_POINT1      982.0f
+#define TEMP_POINT1     23.4f
+#define ADC_POINT2      797.0f
 #define TEMP_POINT2     31.1f
 
 uint32_t Temperature_Read_Raw(void)
 {
-  #define NUM_AMOSTRAS 10 // Número de amostras para a média. Aumente para mais suavidade.
+  #define NUM_AMOSTRAS 100 // Número de amostras para a média. Aumente para mais suavidade.
   
   uint32_t soma_adc = 0;
   uint32_t valor_adc_instantaneo = 0;

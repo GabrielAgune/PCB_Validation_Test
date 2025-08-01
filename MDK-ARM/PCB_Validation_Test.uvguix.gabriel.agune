@@ -1892,9 +1892,9 @@
       </Doc>
       <Doc>
         <Name>..\Core\Src\pcb_temperature.c</Name>
-        <ColumnNumber>29</ColumnNumber>
+        <ColumnNumber>28</ColumnNumber>
         <TopLine>1</TopLine>
-        <CurrentLine>9</CurrentLine>
+        <CurrentLine>7</CurrentLine>
         <Folding>0</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
