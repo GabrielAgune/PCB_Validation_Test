@@ -114,8 +114,7 @@ int main(void)
 	CLI_Init();
 	Frequency_Init();
   /* USER CODE END 2 */
-	printf("Enviando valor de teste 12345 para o display DWIN...\r\n");
-	DWIN_SendData(0x1100, 12345); // Envia um valor fixo
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -127,7 +126,7 @@ int main(void)
     
     // Aguarda a janela de tempo de 1 segundo
     HAL_Delay(1000);
-    uint32_t freq_atual = Frequency_Get_Pulse_Count();
+    uint32_t freq_atual = Frequency_Get_Pulse_Count(); //Contador de 32Bit conta ate +- 4 Bi muito além dos 3 Mi do oscilador
 
     // --- LINHAS DE DEPURAÇÃO ---
     int32_t valor_para_display = (int32_t)(freq_atual / 1000);
