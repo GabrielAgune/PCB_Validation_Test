@@ -5,7 +5,6 @@
 
 // Nossos módulos de hardware
 #include "pcb_relay.h"
-#include "pcb_temperature.h"
 #include "pcb_oscillator.h"
 #include "pcb_frequency.h"
 #include "tim.h" 
@@ -42,14 +41,7 @@ static void CLI_Frequency_Monitor_Loop(void)
     // Aguarda a janela de tempo de 1 segundo
     HAL_Delay(1000);
     
-    // Faz a leitura "atômica" dos contadores
-    HAL_NVIC_DisableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
-    uint32_t overflows = Frequency_Get_Overflow_Count();
-    uint32_t final_count = Frequency_Get_Pulse_Count();
-    HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
-    
-    // Calcula a frequência total
-    freq_atual = ((uint64_t)overflows * 65536) + final_count;
+    freq_atual = Frequency_Get_Pulse_Count();
     
     // Atualiza os valores mínimo e máximo
     if (freq_atual > freq_max)
@@ -62,7 +54,7 @@ static void CLI_Frequency_Monitor_Loop(void)
     }
     
     // Imprime os valores na mesma linha
-    printf("Atual: %-7llu Hz | Min: %-7llu Hz | Max: %-7llu Hz\n\r", freq_atual, freq_min, freq_max);
+    printf("Atual: %-9u Hz | Min: %-9u Hz | Max: %-9u Hz\n\r", (unsigned int)freq_atual, (unsigned int)freq_min, (unsigned int)freq_max);
   }
 
   printf("\r\n\n--- Fim do Monitoramento ---\r\n");
@@ -109,24 +101,17 @@ void CLI_Process(void)
   if (strcmp((char*)rx_buffer, "help") == 0) CLI_Print_Help();
   else if (strcmp((char*)rx_buffer, "relay on") == 0) { Relay_On(); printf("Rele LIGADO.\r\n"); }
   else if (strcmp((char*)rx_buffer, "relay off") == 0) { Relay_Off(); printf("Rele DESLIGADO.\r\n"); }
-  else if (strcmp((char*)rx_buffer, "temp") == 0) { uint32_t val = Temperature_Read_Raw(); printf("Valor ADC da Temperatura: %u\r\n", val); }
-  else if (strcmp((char*)rx_buffer, "tempc") == 0) { uint32_t raw = Temperature_Read_Raw(); float celsius = Temperature_ConvertToCelsius(raw); printf("Temperatura: %.2f C\r\n", celsius); }
   else if (strcmp((char*)rx_buffer, "osc") == 0) { GPIO_PinState state = Oscillator_Get_State(); printf("Estado do Oscilador: %s\r\n", state == GPIO_PIN_SET ? "HIGH (1)" : "LOW (0)"); }
   else if (strcmp((char*)rx_buffer, "osc frec") == 0)
   {
     printf("Iniciando medicao por 1 segundo...\r\n");
     Frequency_Reset();
     HAL_Delay(1000);
-    HAL_NVIC_DisableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
-    uint32_t overflows = Frequency_Get_Overflow_Count();
-    uint32_t final_count = Frequency_Get_Pulse_Count();
-    HAL_NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
-    uint64_t total_pulsos = ((uint64_t)overflows * 65536) + final_count;
-    printf("Frequencia do Oscilador: %llu Hz\r\n", total_pulsos);
+    // A leitura direta já é a frequência em Hz, sem precisar de mais cálculos!
+    uint32_t frequencia_hz = Frequency_Get_Pulse_Count();
+    printf("Frequencia do Oscilador: %u Hz\r\n", (unsigned int)frequencia_hz);
   }
   else if (strcmp((char*)rx_buffer, "osc monitor") == 0) CLI_Frequency_Monitor_Loop();
-  else if (strcmp((char*)rx_buffer, "test pwm on") == 0) { HAL_TIM_PWM_Start(&htim16, TIM_CHANNEL_1); printf("Gerador de teste de 10kHz LIGADO no pino PA6.\r\n"); }
-  else if (strcmp((char*)rx_buffer, "test pwm off") == 0) { HAL_TIM_PWM_Stop(&htim16, TIM_CHANNEL_1); printf("Gerador de teste DESLIGADO.\r\n"); }
   else printf("Comando desconhecido: '%s'\r\n", rx_buffer);
   command_ready_flag = 0;
   printf("> ");

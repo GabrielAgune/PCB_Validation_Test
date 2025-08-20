@@ -6,5 +6,7 @@
   */
 GPIO_PinState Oscillator_Get_State(void)
 {
-  return HAL_GPIO_ReadPin(CAMARA_IN_GPIO_Port, CAMARA_IN_Pin);
+  // A leitura de GPIO não funciona em um pino configurado para Alternate Function (Timer).
+  // Esta função não é mais útil. O comando "osc frec" é o correto.
+  return GPIO_PIN_RESET;
 }

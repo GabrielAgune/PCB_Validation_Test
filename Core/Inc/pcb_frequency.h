@@ -3,10 +3,8 @@
 
 #include "main.h"
 
-// Protótipos para o método de CONTAGEM DE PULSOS
 void Frequency_Init(void);
 void Frequency_Reset(void);
 uint32_t Frequency_Get_Pulse_Count(void);
-uint32_t Frequency_Get_Overflow_Count(void); 
 
 #endif /* INC_PCB_FREQUENCY_H_ */

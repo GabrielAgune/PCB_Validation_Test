@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
 #include "usart.h"
 #include "gpio.h"
 #include "tim.h"
@@ -53,6 +52,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void DWIN_SendData(uint16_t vp_address, int32_t value);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -68,7 +68,16 @@ PUTCHAR_PROTOTYPE
   return ch;
 }
 /* USER CODE END 0 */
-
+void DWIN_SendData(uint16_t vp_address, int32_t value)
+{
+    uint8_t dwin_frame[10];
+    dwin_frame[0] = 0x5A; dwin_frame[1] = 0xA5; dwin_frame[2] = 0x07;
+    dwin_frame[3] = 0x82; dwin_frame[4] = (uint8_t)(vp_address >> 8);
+    dwin_frame[5] = (uint8_t)(vp_address); dwin_frame[6] = (uint8_t)(value >> 24);
+    dwin_frame[7] = (uint8_t)(value >> 16); dwin_frame[8] = (uint8_t)(value >> 8);
+    dwin_frame[9] = (uint8_t)(value);
+    HAL_UART_Transmit(&huart1, dwin_frame, 10, 100);
+}
 /**
   * @brief  The application entry point.
   * @retval int
@@ -98,21 +107,35 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ADC1_Init();
   MX_USART2_UART_Init();
-	MX_TIM1_Init();
-	MX_TIM16_Init();
+	MX_USART1_UART_Init();
+	MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 	CLI_Init();
 	Frequency_Init();
   /* USER CODE END 2 */
-	
+	printf("Enviando valor de teste 12345 para o display DWIN...\r\n");
+	DWIN_SendData(0x1100, 12345); // Envia um valor fixo
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-		CLI_Process();
+		//CLI_Process();
+		
+		Frequency_Reset();
+    
+    // Aguarda a janela de tempo de 1 segundo
+    HAL_Delay(1000);
+    uint32_t freq_atual = Frequency_Get_Pulse_Count();
+
+    // --- LINHAS DE DEPURAÇÃO ---
+    int32_t valor_para_display = (int32_t)(freq_atual / 1000);
+    printf("Debug: Freq = %u Hz, Valor Enviado = %d\r\n", (unsigned int)freq_atual, (int)valor_para_display);
+    // --- FIM DAS LINHAS DE DEPURAÇÃO ---
+
+    DWIN_SendData(0x1050, valor_para_display);
+		
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

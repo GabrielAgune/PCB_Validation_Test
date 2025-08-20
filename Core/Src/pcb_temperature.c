@@ -1,6 +1,5 @@
 #include "pcb_temperature.h"
-#include "adc.h"
-
+/*
 // --- CONSTANTES DE CALIBRAÇÃO (BASEADO NOS SEUS DADOS) ---
 // --- CONSTANTES DE CALIBRAÇÃO (ATUALIZADAS COM SEUS NOVOS DADOS) ---
 #define ADC_POINT1      982.0f
@@ -38,12 +37,14 @@ uint32_t Temperature_Read_Raw(void)
   return soma_adc / NUM_AMOSTRAS;
 }
 
-
+*/
 /**
   * @brief  Converte o valor ADC bruto para Graus Celsius usando CALIBRAÇÃO LINEAR.
   * @param  adc_raw_value: O valor de 12 bits lido do ADC.
   * @retval Temperatura calculada em Graus Celsius.
   */
+	
+	/*
 float Temperature_ConvertToCelsius(uint32_t adc_raw_value)
 {
   float adc_atual = (float)adc_raw_value;
@@ -56,4 +57,4 @@ float Temperature_ConvertToCelsius(uint32_t adc_raw_value)
   temperatura = TEMP_POINT1 + (slope * (adc_atual - ADC_POINT1));
 
   return temperatura;
-}
+}*/

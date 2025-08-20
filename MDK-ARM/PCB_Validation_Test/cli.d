@@ -16,9 +16,6 @@ pcb_validation_test/cli.o: ..\Core\Src\cli.c ..\Core\Inc\cli.h \
   ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_dma.h \
   ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_dma_ex.h \
   ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_cortex.h \
-  ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_adc.h \
-  ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_ll_adc.h \
-  ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_adc_ex.h \
   ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_exti.h \
   ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_flash.h \
   ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_flash_ex.h \
@@ -29,5 +26,5 @@ pcb_validation_test/cli.o: ..\Core\Src\cli.c ..\Core\Inc\cli.h \
   ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_uart.h \
   ..\Drivers\STM32C0xx_HAL_Driver\Inc\stm32c0xx_hal_uart_ex.h \
   ..\Core\Inc\usart.h ..\Core\Inc\pcb_relay.h \
-  ..\Core\Inc\pcb_temperature.h ..\Core\Inc\pcb_oscillator.h \
-  ..\Core\Inc\pcb_frequency.h ..\Core\Inc\tim.h
+  ..\Core\Inc\pcb_oscillator.h ..\Core\Inc\pcb_frequency.h \
+  ..\Core\Inc\tim.h

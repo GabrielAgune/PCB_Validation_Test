@@ -57,10 +57,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define TEMP_ADC_Pin GPIO_PIN_0
-#define TEMP_ADC_GPIO_Port GPIOA
-#define CAMARA_IN_Pin GPIO_PIN_8
-#define CAMARA_IN_GPIO_Port GPIOA
 #define RELAY_CTRL_Pin GPIO_PIN_9
 #define RELAY_CTRL_GPIO_Port GPIOA
 #define LED_BLUE_Pin GPIO_PIN_9
